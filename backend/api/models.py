@@ -34,6 +34,7 @@ class WorkoutPlan(models.Model):
 class DailyWorkout(models.Model):
     """
     A workout scheduled for a specific day within a user's workout plan.
+    Adds fields for actual sets/reps and notes for granular checklist/progress tracking.
     """
     plan = models.ForeignKey(WorkoutPlan, on_delete=models.CASCADE, related_name='daily_workouts')
     date = models.DateField()
@@ -46,6 +47,10 @@ class DailyWorkout(models.Model):
     duration_minutes = models.PositiveIntegerField(default=0, help_text='Duration in minutes (if cardio)')
     rest_seconds = models.PositiveIntegerField(default=0)
     completed = models.BooleanField(default=False)
+    # NEW: actual values completed, optional
+    actual_sets = models.PositiveIntegerField(null=True, blank=True, help_text='Actual number of sets performed')
+    actual_reps = models.PositiveIntegerField(null=True, blank=True, help_text='Actual number of reps performed per set')
+    notes = models.TextField(blank=True, help_text='Notes or comments on this workout/completion')
 
     class Meta:
         ordering = ['date']
