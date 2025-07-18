@@ -83,10 +83,27 @@ WSGI_APPLICATION = 'config.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
+# [Container Coordination]
+# For cross-container compatibility, SQLite DB path is read from the SQLITE_DB environment variable if set,
+# otherwise falls back to local 'db.sqlite3'.
+# To initialize the DB and apply migrations, run:
+#     python manage.py makemigrations
+#     python manage.py migrate
+# To create a superuser for Django admin, run:
+#     python manage.py createsuperuser
+
+import os
+
+SQLITE_DB_PATH = os.environ.get('SQLITE_DB')
+if SQLITE_DB_PATH:
+    DB_LOCATION = SQLITE_DB_PATH
+else:
+    DB_LOCATION = BASE_DIR / 'db.sqlite3'
+
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'NAME': DB_LOCATION,
     }
 }
 
