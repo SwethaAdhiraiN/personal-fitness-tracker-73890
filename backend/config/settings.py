@@ -25,11 +25,24 @@ SECRET_KEY = 'django-insecure-0ku_as45vs5isd^px=t#m8g#^*x7f=w#gw-xb^t@^-pom)r^t6
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
+# ALLOWED_HOSTS for development and production: include backend API, localhost, container hostname, and frontend origins.
 ALLOWED_HOSTS = [
-    '.kavia.ai',
+    '.kavia.ai',  # prod domain
     'localhost',
     '127.0.0.1',
     'testserver',
+    # Allow front-end IP/hostname if using external React dev server:
+    'vscode-internal-0002-beta.beta01.cloud.kavia.ai',
+    # Allow Docker container hostnames if using docker-compose integration
+    'backend',  # internal hostname (edit as appropriate)
+]
+
+# Explicitly declare CSRF trusted origins for frontend-backend integration and for AJAX POSTs from frontend
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://vscode-internal-0002-beta.beta01.cloud.kavia.ai:3000",
+    # Add your production front-end domain here
 ]
 
 
@@ -49,11 +62,10 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'corsheaders.middleware.CorsMiddleware',
+    'corsheaders.middleware.CorsMiddleware',  # Handles CORS first!
     'django.middleware.common.CommonMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -150,13 +162,14 @@ STATIC_URL = 'static/'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS configuration for React frontend-backend integration
-CORS_ALLOW_ALL_ORIGINS = False  # We'll specify allowed origins for more security
+CORS_ALLOW_ALL_ORIGINS = False  # Only allow specified client origins
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "http://localhost:3000",  # Local React dev
     "http://127.0.0.1:3000",
     "https://vscode-internal-0002-beta.beta01.cloud.kavia.ai:3000",
+    # Add production frontend URL(s) here
 ]
-CORS_ALLOW_CREDENTIALS = True    # If authentication/session cookies are used between frontend/backend
+CORS_ALLOW_CREDENTIALS = True    # Allow sending of cookies (for session, auth)
 CORS_ALLOW_HEADERS = [
     'accept',
     'accept-encoding',
@@ -168,6 +181,45 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+CORS_EXPOSE_HEADERS = [
+    'Content-Type',
+    'X-CSRFToken',
+    'Set-Cookie',
+]
+CORS_PREFLIGHT_MAX_AGE = 86400  # Reduce number of preflight requests
 
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
+
+# Django session and cookie settings for cross-origin security and React
+SESSION_COOKIE_AGE = 60 * 60 * 24 * 7    # 1 week sessions
+SESSION_SAVE_EVERY_REQUEST = True        # Update expiry on activity
+
+SESSION_COOKIE_SECURE = False  # Set True in production with HTTPS
+SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'  # Can be 'Strict', 'Lax', or 'None' (use 'None' if frontend served on different domain w/ https)
+
+CSRF_COOKIE_SECURE = False  # Set True in production with HTTPS
+CSRF_COOKIE_HTTPONLY = False  # If you want JS to read it for fetch()
+CSRF_COOKIE_SAMESITE = 'Lax'  # 'Lax' for most safe React AJAX interop
+CSRF_HEADER_NAME = "HTTP_X_CSRFTOKEN"
+
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",  # Use default authentication
+]
+
+# Set custom User model if used (already in models.py)
+AUTH_USER_MODEL = 'api.User'
+
+# REST Framework auth configuration for session + cookie-based login/logout
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework.authentication.SessionAuthentication',
+        # You could add JWT or TokenAuthentication for non-cookie use.
+    ],
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+    ],
+    'UNAUTHENTICATED_USER': None,
+    'UNAUTHENTICATED_TOKEN': None,
+}
