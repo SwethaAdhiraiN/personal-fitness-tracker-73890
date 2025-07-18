@@ -149,6 +149,25 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS configuration for React frontend-backend integration
+CORS_ALLOW_ALL_ORIGINS = False  # We'll specify allowed origins for more security
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "https://vscode-internal-0002-beta.beta01.cloud.kavia.ai:3000",
+]
+CORS_ALLOW_CREDENTIALS = True    # If authentication/session cookies are used between frontend/backend
+CORS_ALLOW_HEADERS = [
+    'accept',
+    'accept-encoding',
+    'authorization',
+    'content-type',
+    'dnt',
+    'origin',
+    'user-agent',
+    'x-csrftoken',
+    'x-requested-with',
+]
+
 SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 USE_X_FORWARDED_HOST = True
