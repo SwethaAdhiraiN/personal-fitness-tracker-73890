@@ -5,6 +5,29 @@ from .models import WorkoutPlan, DailyWorkout, BodyComposition, ProgressTracking
 User = get_user_model()
 
 # PUBLIC_INTERFACE
+class BodyFatEstimateSerializer(serializers.Serializer):
+    """Serializer for body fat estimation POST."""
+    sex = serializers.ChoiceField(choices=[('male', 'Male'), ('female', 'Female')])
+    height_cm = serializers.FloatField(min_value=0)
+    neck_cm = serializers.FloatField(min_value=0)
+    waist_cm = serializers.FloatField(min_value=0)
+    hips_cm = serializers.FloatField(min_value=0, required=False)
+    # For response
+    body_fat = serializers.FloatField(read_only=True)
+
+# PUBLIC_INTERFACE
+class ProgressAggregationSerializer(serializers.Serializer):
+    """Serializer for aggregated chart data."""
+    label = serializers.CharField()
+    value = serializers.FloatField()
+
+# PUBLIC_INTERFACE
+class DailyWorkoutChecklistSerializer(serializers.Serializer):
+    """Serializer for handling daily workout checklist POST."""
+    id = serializers.IntegerField()
+    completed = serializers.BooleanField()
+
+# PUBLIC_INTERFACE
 class UserRegistrationSerializer(serializers.ModelSerializer):
     """Serializer for user registration."""
     password = serializers.CharField(write_only=True, min_length=6)
